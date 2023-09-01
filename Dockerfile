@@ -1,16 +1,15 @@
-# define from what image we want to build from
-FROM node:16
-
-# create a directory to hold the application code inside the image
+# Stage 1: Build the application
+FROM node:14 AS builder
 WORKDIR /app
+COPY . .
+RUN npm install
+RUN npm run build
 
-# install your app dependencies 
-COPY . /app
-
-RUN npm i
-
-# Bundle app source
-
+# Stage 2: Create the final image
+FROM node:14
+WORKDIR /app
+COPY --from=builder /app/dist ./dist
+COPY package*.json ./
+RUN npm install --only=production
 EXPOSE 5000
-
 CMD [ "npm", "start" ]
